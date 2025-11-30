@@ -24,6 +24,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <a href="/categories" className="hover:text-ink">
                 Категорії
               </a>
+              <a href="/stats" className="hover:text-ink">
+                Статистика
+              </a>
             </nav>
           </header>
           {children}

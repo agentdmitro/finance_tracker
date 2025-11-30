@@ -62,6 +62,38 @@ export function loadExpenses(): Expense[] {
   return safeParse<Expense[]>(localStorage.getItem(EXPENSE_KEY), []);
 }
 
+const DEFAULT_EXPENSES: Array<Omit<Expense, "id" | "categoryId"> & { categoryName?: string }> = [
+  { title: "example 1", amount: 100, date: "2025-12-05", categoryName: "Продукти" },
+  { title: "example 2", amount: 250, date: "2025-12-12", categoryName: "Транспорт" },
+  { title: "example 3", amount: 430, date: "2025-12-20", categoryName: "Розваги" },
+  { title: "example 1", amount: 180, date: "2025-11-04", categoryName: "Продукти" },
+  { title: "example 2", amount: 320, date: "2025-11-15", categoryName: "Житло" },
+  { title: "example 3", amount: 90, date: "2025-11-25", categoryName: "Транспорт" }
+];
+
+export function loadExpensesWithDefaults(): Expense[] {
+  const existing = loadExpenses();
+  if (existing.length > 0) return existing;
+  const categories = loadCategoriesWithDefaults();
+  if (categories.length === 0) return existing;
+
+  const findCategoryId = (name?: string) => {
+    const found = categories.find((c) => (name ? c.name === name : false));
+    return found?.id ?? categories[0].id;
+  };
+
+  const seeded = DEFAULT_EXPENSES.map((exp) => ({
+    id: fallbackId(),
+    title: exp.title,
+    amount: exp.amount,
+    date: new Date(exp.date).toISOString(),
+    categoryId: findCategoryId(exp.categoryName)
+  }));
+
+  saveExpenses(seeded);
+  return seeded;
+}
+
 export function saveExpenses(expenses: Expense[]) {
   if (typeof window === "undefined") return;
   localStorage.setItem(EXPENSE_KEY, JSON.stringify(expenses));

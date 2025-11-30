@@ -1,8 +1,11 @@
 export function formatCurrency(value: number) {
-  return new Intl.NumberFormat("uk-UA", {
-    style: "currency",
-    currency: "UAH"
-  }).format(value);
+  const safe = Number.isFinite(value) ? value : 0;
+  const formatted = safe.toLocaleString("uk-UA", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    useGrouping: true
+  });
+  return `${formatted} грн`;
 }
 
 export function formatDate(date: string | Date) {

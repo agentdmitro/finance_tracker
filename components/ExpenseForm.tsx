@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { addExpense, type Category, type Expense } from "@/lib/storage";
+import { CustomSelect } from "./CustomSelect";
 
 type ExpenseFormProps = {
   categories: Category[];
@@ -81,18 +82,13 @@ export function ExpenseForm({ categories, onSaved }: ExpenseFormProps) {
         />
       </div>
       <div className="space-y-1">
-        <label className="text-sm font-medium text-ink">Категорія</label>
-        <select
+        <CustomSelect
+          label="Категорія"
           value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
-          className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm shadow-inner focus:border-blue-500 focus:outline-none"
-        >
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
+          onChange={(val) => setCategoryId(val)}
+          options={categories.map((c) => ({ label: c.name, value: c.id }))}
+          placeholder="Оберіть категорію"
+        />
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
       <button
