@@ -1,37 +1,33 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { ExpenseForm } from "@/components/ExpenseForm";
+import { loadCategoriesWithDefaults, type Category, type Expense } from "@/lib/storage";
 
-type Category = {
-  id: number;
-  name: string;
-  color: string;
-};
+export default function NewExpensePage() {
+  const [categories, setCategories] = useState<Category[]>([]);
 
-const apiBase = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  useEffect(() => {
+    setCategories(loadCategoriesWithDefaults());
+  }, []);
 
-async function getCategories(): Promise<{ categories: Category[] }> {
-  const res = await fetch(`${apiBase}/api/categories`, { cache: "no-store" });
-  if (!res.ok) {
-    throw new Error("Failed to load categories");
-  }
-  return res.json();
-}
-
-export default async function NewExpensePage() {
-  const { categories } = await getCategories();
+  const handleSaved = (_expense: Expense) => {
+    // noop hook for future side effects; router navigation handled inside form
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-ink">Add Expense</h2>
-          <p className="text-sm text-slate-600">Capture spending with a category and date.</p>
+          <h2 className="text-xl font-semibold text-ink">Додати витрату</h2>
+          <p className="text-sm text-slate-600">Збережіть витрату з датою та категорією.</p>
         </div>
         <Link href="/expenses" className="text-sm text-blue-600 hover:text-blue-700">
-          Back to expenses
+          Назад до витрат
         </Link>
       </div>
-      <ExpenseForm categories={categories} />
+      <ExpenseForm categories={categories} onSaved={handleSaved} />
     </div>
   );
 }

@@ -30,6 +30,21 @@ export function loadCategories(): Category[] {
   return safeParse<Category[]>(localStorage.getItem(CATEGORY_KEY), []);
 }
 
+const DEFAULT_CATEGORIES: Array<Omit<Category, "id">> = [
+  { name: "Продукти", color: "#22c55e" },
+  { name: "Транспорт", color: "#3b82f6" },
+  { name: "Розваги", color: "#a855f7" },
+  { name: "Житло", color: "#f97316" }
+];
+
+export function loadCategoriesWithDefaults(): Category[] {
+  const existing = loadCategories();
+  if (existing.length > 0) return existing;
+  const seeded = DEFAULT_CATEGORIES.map((cat) => ({ ...cat, id: fallbackId() }));
+  saveCategories(seeded);
+  return seeded;
+}
+
 export function saveCategories(categories: Category[]) {
   if (typeof window === "undefined") return;
   localStorage.setItem(CATEGORY_KEY, JSON.stringify(categories));

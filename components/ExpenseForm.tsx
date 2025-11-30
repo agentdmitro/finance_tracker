@@ -1,54 +1,48 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
-
-type Category = {
-  id: number;
-  name: string;
-  color: string;
-};
+import { useEffect, useState, type FormEvent } from "react";
+import { addExpense, type Category, type Expense } from "@/lib/storage";
 
 type ExpenseFormProps = {
   categories: Category[];
+  onSaved?: (expense: Expense) => void;
 };
 
-export function ExpenseForm({ categories }: ExpenseFormProps) {
+export function ExpenseForm({ categories, onSaved }: ExpenseFormProps) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().substring(0, 10));
-  const [categoryId, setCategoryId] = useState(categories[0]?.id ?? 0);
+  const [categoryId, setCategoryId] = useState<string>(categories[0]?.id ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!categoryId && categories[0]?.id) {
+      setCategoryId(categories[0].id);
+    }
+  }, [categories, categoryId]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !amount.trim() || !date || !categoryId) {
-      setError("Please fill in all fields.");
+      setError("Будь ласка, заповніть усі поля.");
       return;
     }
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/expenses", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          amount: Number(amount),
-          date: new Date(date).toISOString(),
-          categoryId: Number(categoryId)
-        })
+      const expense = addExpense({
+        title,
+        amount: Number(amount),
+        date: new Date(date).toISOString(),
+        categoryId
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || "Failed to create expense");
-      }
+      onSaved?.(expense);
       router.push("/expenses");
-      router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Сталася помилка");
     } finally {
       setLoading(false);
     }
@@ -57,17 +51,17 @@ export function ExpenseForm({ categories }: ExpenseFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4 rounded-lg bg-white p-5 shadow-sm ring-1 ring-slate-200">
       <div className="space-y-1">
-        <label className="text-sm font-medium text-ink">Title</label>
+        <label className="text-sm font-medium text-ink">Назва витрати</label>
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm shadow-inner focus:border-blue-500 focus:outline-none"
-          placeholder="Coffee"
+          placeholder="Кава"
         />
       </div>
       <div className="space-y-1">
-        <label className="text-sm font-medium text-ink">Amount</label>
+        <label className="text-sm font-medium text-ink">Сума</label>
         <input
           type="number"
           step="0.01"
@@ -78,7 +72,7 @@ export function ExpenseForm({ categories }: ExpenseFormProps) {
         />
       </div>
       <div className="space-y-1">
-        <label className="text-sm font-medium text-ink">Date</label>
+        <label className="text-sm font-medium text-ink">Дата</label>
         <input
           type="date"
           value={date}
@@ -87,10 +81,10 @@ export function ExpenseForm({ categories }: ExpenseFormProps) {
         />
       </div>
       <div className="space-y-1">
-        <label className="text-sm font-medium text-ink">Category</label>
+        <label className="text-sm font-medium text-ink">Категорія</label>
         <select
           value={categoryId}
-          onChange={(e) => setCategoryId(Number(e.target.value))}
+          onChange={(e) => setCategoryId(e.target.value)}
           className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm shadow-inner focus:border-blue-500 focus:outline-none"
         >
           {categories.map((category) => (
@@ -106,9 +100,9 @@ export function ExpenseForm({ categories }: ExpenseFormProps) {
         disabled={loading || categories.length === 0}
         className="w-full rounded-md bg-ink px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-900 disabled:opacity-60"
       >
-        {loading ? "Saving..." : "Add Expense"}
+        {loading ? "Зберігаємо..." : "Додати витрату"}
       </button>
-      {categories.length === 0 && <p className="text-xs text-slate-500">Add a category first.</p>}
+      {categories.length === 0 && <p className="text-xs text-slate-500">Спочатку додайте категорію.</p>}
     </form>
   );
 }
