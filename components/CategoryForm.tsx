@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { addCategory, type Category } from "@/lib/storage";
 
 type CategoryFormProps = {
-  onCreated?: () => void;
+  onCreated?: (category: Category) => void;
 };
 
 export function CategoryForm({ onCreated }: CategoryFormProps) {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [color, setColor] = useState("#22c55e");
   const [loading, setLoading] = useState(false);
@@ -17,27 +16,18 @@ export function CategoryForm({ onCreated }: CategoryFormProps) {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !color.trim()) {
-      setError("Please fill in all fields.");
+      setError("Будь ласка, заповніть усі поля.");
       return;
     }
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/categories", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, color })
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || "Failed to create category");
-      }
+      const category = addCategory({ name, color });
       setName("");
       setColor("#22c55e");
-      onCreated?.();
-      router.refresh();
+      onCreated?.(category);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Сталася помилка");
     } finally {
       setLoading(false);
     }
@@ -46,17 +36,17 @@ export function CategoryForm({ onCreated }: CategoryFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4 rounded-lg bg-white p-4 shadow-sm ring-1 ring-slate-200">
       <div className="space-y-1">
-        <label className="text-sm font-medium text-ink">Name</label>
+        <label className="text-sm font-medium text-ink">Назва</label>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm shadow-inner focus:border-blue-500 focus:outline-none"
-          placeholder="Groceries"
+          placeholder="Продукти"
         />
       </div>
       <div className="space-y-1">
-        <label className="text-sm font-medium text-ink">Color</label>
+        <label className="text-sm font-medium text-ink">Колір</label>
         <div className="flex items-center gap-3">
           <input
             type="color"
@@ -79,7 +69,7 @@ export function CategoryForm({ onCreated }: CategoryFormProps) {
         disabled={loading}
         className="w-full rounded-md bg-ink px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-900 disabled:opacity-60"
       >
-        {loading ? "Saving..." : "Add Category"}
+        {loading ? "Зберігаємо..." : "Додати категорію"}
       </button>
     </form>
   );

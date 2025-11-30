@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import { CategoryBadge } from "@/components/CategoryBadge";
 import { CategoryForm } from "@/components/CategoryForm";
 
@@ -8,14 +7,10 @@ type Category = {
   color: string;
 };
 
-const baseUrl = () => {
-  const host = headers().get("host");
-  const protocol = host?.startsWith("localhost") ? "http" : "https";
-  return `${protocol}://${host}`;
-};
+const apiBase = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
 async function getCategories(): Promise<{ categories: Category[] }> {
-  const res = await fetch(`${baseUrl()}/api/categories`, { cache: "no-store" });
+  const res = await fetch(`${apiBase}/api/categories`, { cache: "no-store" });
   if (!res.ok) {
     throw new Error("Failed to load categories");
   }

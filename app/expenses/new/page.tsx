@@ -7,10 +7,10 @@ type Category = {
   color: string;
 };
 
+const apiBase = process.env.NEXT_PUBLIC_APP_URL ?? "";
+
 async function getCategories(): Promise<{ categories: Category[] }> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/api/categories`, {
-    cache: "no-store"
-  });
+  const res = await fetch(`${apiBase}/api/categories`, { cache: "no-store" });
   if (!res.ok) {
     throw new Error("Failed to load categories");
   }

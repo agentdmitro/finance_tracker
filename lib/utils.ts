@@ -1,13 +1,13 @@
 export function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("uk-UA", {
     style: "currency",
-    currency: "USD"
+    currency: "UAH"
   }).format(value);
 }
 
 export function formatDate(date: string | Date) {
   const d = typeof date === "string" ? new Date(date) : date;
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("uk-UA", {
     year: "numeric",
     month: "short",
     day: "numeric"
@@ -20,7 +20,7 @@ export function monthOptions(count = 12) {
   for (let i = 0; i < count; i += 1) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    const label = date.toLocaleString("en-US", {
+    const label = date.toLocaleString("uk-UA", {
       month: "long",
       year: "numeric"
     });

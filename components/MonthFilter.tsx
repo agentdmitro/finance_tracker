@@ -1,35 +1,21 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { monthOptions } from "@/lib/utils";
 
 type MonthFilterProps = {
   current?: string | null;
+  onChange: (value: string) => void;
 };
 
-export function MonthFilter({ current }: MonthFilterProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+export function MonthFilter({ current, onChange }: MonthFilterProps) {
   const options = monthOptions();
-
-  const handleChange = (value: string) => {
-    const params = new URLSearchParams(searchParams?.toString());
-    if (value) {
-      params.set("month", value);
-    } else {
-      params.delete("month");
-    }
-    router.push(`${pathname}?${params.toString()}`);
-    router.refresh();
-  };
 
   return (
     <div className="flex items-center gap-2">
-      <label className="text-sm text-slate-600">Month</label>
+      <label className="text-sm text-slate-600">Місяць</label>
       <select
         value={current ?? ""}
-        onChange={(e) => handleChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         className="rounded-md border border-slate-200 px-3 py-2 text-sm shadow-inner focus:border-blue-500 focus:outline-none"
       >
         {options.map((option) => (

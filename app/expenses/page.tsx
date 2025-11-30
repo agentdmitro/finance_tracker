@@ -19,11 +19,11 @@ type SummaryResponse = {
   total: number;
 };
 
+const apiBase = process.env.NEXT_PUBLIC_APP_URL ?? "";
+
 async function getExpenses(month?: string | null): Promise<ExpensesResponse> {
   const qs = month ? `?month=${month}` : "";
-  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/api/expenses${qs}`, {
-    cache: "no-store"
-  });
+  const res = await fetch(`${apiBase}/api/expenses${qs}`, { cache: "no-store" });
   if (!res.ok) {
     throw new Error("Failed to load expenses");
   }
@@ -32,9 +32,7 @@ async function getExpenses(month?: string | null): Promise<ExpensesResponse> {
 
 async function getSummary(month?: string | null): Promise<SummaryResponse> {
   const qs = month ? `?month=${month}` : "";
-  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/api/expenses/summary${qs}`, {
-    cache: "no-store"
-  });
+  const res = await fetch(`${apiBase}/api/expenses/summary${qs}`, { cache: "no-store" });
   if (!res.ok) {
     throw new Error("Failed to load summary");
   }
@@ -47,7 +45,15 @@ type PageProps = {
 
 export default async function ExpensesPage({ searchParams }: PageProps) {
   const selectedMonth = searchParams?.month || buildMonthValue(new Date());
-  const [expensesRes, summaryRes] = await Promise.all([getExpenses(selectedMonth), getSummary(selectedMonth)]);
+  let expensesRes: ExpensesResponse = { expenses: [] };
+  let summaryRes: SummaryResponse = { total: 0 };
+  let errorMessage: string | null = null;
+
+  try {
+    [expensesRes, summaryRes] = await Promise.all([getExpenses(selectedMonth), getSummary(selectedMonth)]);
+  } catch (error) {
+    errorMessage = error instanceof Error ? error.message : "Failed to load data";
+  }
 
   return (
     <div className="space-y-6">
@@ -71,6 +77,8 @@ export default async function ExpensesPage({ searchParams }: PageProps) {
         <p className="text-sm font-semibold text-ink">Total this month</p>
         <p className="text-2xl font-bold text-ink">{formatCurrency(summaryRes.total || 0)}</p>
       </div>
+
+      {errorMessage && <p className="text-sm text-red-600">{errorMessage}</p>}
 
       <div className="space-y-3">
         {expensesRes.expenses.length === 0 && (
